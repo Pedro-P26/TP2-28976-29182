@@ -34,24 +34,55 @@ function preload(){
     this.load.image('brick33','assets/brick3.png')
 }
 
-let player, ball, violetBricks, yellowBricks, redBricks;
+let player1,player2, ball, verdeBricks, roxoBricks, azulBricks;
 
 
 
 function create(){
 
     player = this.physics.add.sprite(
-        700, 
-        600,
+        1250, 
+        1640,
         'paddle',
 
     );
 
     ball = this.physics.add.sprite(
-        700, 
-        470, 
+        1250, 
+        1500, 
         'ball' 
       );
+
+    verdeBricks = this.physics.add.group({
+        key: 'brick1',
+        repeat: 4,
+        setXY: {
+          x: 240,
+          y: 1100,
+          stepX: 500
+        }
+      });
+    roxoBricks = this.physics.add.group({
+        key: 'brick2',
+        repeat: 4,
+        setXY: {
+          x: 240,
+          y: 900,
+          stepX: 500
+        }
+      });
+
+      azulBricks = this.physics.add.group({
+        key: 'brick3',
+        repeat: 4,
+        setXY: {
+          x: 240,
+          y: 700,
+          stepX: 500
+        }
+      });
+      
+      
    
 }
 function update(){
