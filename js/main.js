@@ -1,37 +1,58 @@
 const config = {
     type: Phaser.AUTO,
-    width: 800,
-    height: 700,
-    physics: {
-        default: 'arcade',
-        arcade: {
-            gravity: { y: 0 }
-        }
+    parent: 'game',
+    width: 640,
+    height: 640,
+    scale: {
+      mode: Phaser.Scale.RESIZE,
+      autoCenter: Phaser.Scale.CENTER_BOTH
     },
-
-scene:{
-    preload: preload,
-    create: create,
-    update: update
-}
-
-
-
-};
-
+    scene: {
+      preload,
+      create,
+      update,
+    },
+    physics: {
+      default: 'arcade',
+      arcade: {
+        gravity: false
+      },
+    }
+  };
+  
+  // Create the game instance
 const game = new Phaser.Game(config);
 
 function preload(){
-    this.load.image('bola','assets/bola.png')
+    this.load.image('ball','assets/ball.png')
     this.load.image('paddle','assets/paddle.png')
-    this.load.image('enemi','assets/legacy_eggman_render_by_nibroc_rock-daoukr9.webp')
+    this.load.image('brick1','assets/brick1.png')
+    this.load.image('brick2','assets/brick2.png')
+    this.load.image('brick3','assets/brick3.png')
+    this.load.image('brick11','assets/brick1.png')
+    this.load.image('brick22','assets/brick2.png')
+    this.load.image('brick33','assets/brick3.png')
 }
 
-function create(){
-    player.setSkil.add(100,100)
-    player = this.physics.add.sprite(400,500,'spaceship')
-    player.setCollideworldBounds(true);
+let player, ball, violetBricks, yellowBricks, redBricks;
 
+
+
+function create(){
+
+    player = this.physics.add.sprite(
+        700, 
+        600,
+        'paddle',
+
+    );
+
+    ball = this.physics.add.sprite(
+        700, 
+        470, 
+        'ball' 
+      );
+   
 }
 function update(){
 
