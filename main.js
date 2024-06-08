@@ -15,6 +15,7 @@ const config = {
     physics: {
       default: 'arcade',
       arcade: {
+        debug:true,
         gravity: false
       },
     }
@@ -35,10 +36,29 @@ function preload(){
 }
 
 let player1,player2, ball1,ball2, verdeBricks, roxoBricks, azulBricks, cursor1,cursor2;
+let gameStarted = false;
+let openingText, gameOverText, playerWonText;
+
 
 
 
 function create(){
+
+
+
+  
+  openingText = this.add.text(
+    this.physics.world.bounds.width / 2,
+    this.physics.world.bounds.height / 2,
+    'Press SPACE to Start',
+    {
+      fontFamily: 'Monaco, Courier, monospace',
+      fontSize: '90px',
+      fill: '#fff'
+    },
+  );
+  
+  openingText.setOrigin(0.85);
   
   //-----------------------------//
     player1 = this.physics.add.sprite(
@@ -47,13 +67,14 @@ function create(){
         'paddle',
 
     ).setScale(0.5);
-    player1.setCollideWorldBounds(true);
+    //player1.setCollideWorldBounds(true);
 
     ball1 = this.physics.add.sprite(
         1250, 
         1500, 
         'ball' 
       ).setScale(0.5);
+   
   //---------------------------//
 
     player2 = this.physics.add.sprite(
@@ -74,6 +95,7 @@ function create(){
     verdeBricks = this.physics.add.group({
         key: 'brick1',
         repeat: 4,
+        immovable: true,
         setXY: {
           x: 500,
           y: 1100,
@@ -86,6 +108,7 @@ function create(){
     roxoBricks = this.physics.add.group({
         key: 'brick2',
         repeat: 4,
+        immovable: true,
         setXY: {
           x: 500,
           y: 1000,
@@ -98,6 +121,7 @@ function create(){
       azulBricks = this.physics.add.group({
         key: 'brick3',
         repeat: 4,
+        immovable: true,
         setXY: {
           x: 500,
           y: 900,
@@ -117,17 +141,54 @@ function create(){
     left: Phaser.Input.Keyboard.KeyCodes.A,
     right: Phaser.Input.Keyboard.KeyCodes.D
   });
-   
+
+  //Testar com player1 falta player2//
+  player1.setCollideWorldBounds(true);
+  ball1.setCollideWorldBounds(true);
+  ball1.setBounce(1, 1);
+  this.physics.world.checkCollision.down = false;
+
+
+  //Partir bricks//
+  // Adiciona colisão entre a bola e os tijolos
+  this.physics.add.collider(ball1, verdeBricks, brickCollision, null, this);
+  this.physics.add.collider(ball1, roxoBricks, brickCollision, null, this);
+  this.physics.add.collider(ball1, azulBricks, brickCollision, null, this);
+ 
+
+  player1.setImmovable(true);
+  this.physics.add.collider(ball1, player1, hitPlayer, null, this);
+
 }
 function update(){
 
+    if (!gameStarted && cursor1.space.isDown) {
+      gameStarted = true;
+      ball1.setVelocityY(-300);
+      ball1.setX(player1.x);
+      openingText.setVisible(false);  // Oculta o texto inicial
+    }
+
+    
     if (cursor1.left.isDown) {
       player1.setVelocityX(-500); // move para a esquerda
     } else if (cursor1.right.isDown) {
       player1.setVelocityX(500); // move para a direita
     } else {
-      player1.setVelocityX(0); // para quando nenhuma tecla de movimento é pressionada
+      player1.setVelocityX(0); // para quando nenhuma tecla de movimento é pressionada~
+
+      if (!gameStarted) {
+        ball1.setX(player1.x);
+      
+        if (cursor1.space.isDown) {
+          gameStarted = true;
+          ball1.setVelocityY(-200);
+        }
+      }
+
     }
+
+    
 
 
     if (cursor2.left.isDown) {
@@ -154,4 +215,21 @@ function isGameOverPlayer2(world) {
 
 function isWon() {
   return verdeBricks.countActive() + roxoBricks.countActive() + azulBricksBricks.countActive() == 0;
+}
+
+function brickCollision(ball, brick) {
+  brick.disableBody(true, true); // Desativa e esconde o tijolo
+}
+
+function hitPlayer(ball1, player1) {
+  // Increase the velocity of the ball after it bounces
+  ball1.setVelocityY(ball1.body.velocity.y - 5);
+
+  let newXVelocity = Math.abs(ball1.body.velocity.x) + 10;
+  // If the ball is to the left of the player, ensure the X Velocity is negative
+  if (ball1.x < player1.x) {
+    ball1.setVelocityX(-newXVelocity);
+  } else {
+    ball1.setVelocityX(newXVelocity);
+  }
 }
