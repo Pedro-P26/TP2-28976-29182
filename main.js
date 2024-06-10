@@ -1,3 +1,19 @@
+const gameScene = new Phaser.Class({
+  Extends: Phaser.Scene,
+
+  initialize:
+
+  function GameScene() {
+    Phaser.Scene.call(this, { key: 'GameScene' });
+  },
+
+  // Mova as funções `preload`, `create`, e `update` para cá
+  preload,
+  create,
+  update,
+});
+
+
 const config = {
     type: Phaser.AUTO,
     parent: 'game',
@@ -7,11 +23,12 @@ const config = {
       mode: Phaser.Scale.RESIZE,
       autoCenter: Phaser.Scale.CENTER_BOTH
     },
-    scene: {
+    /*scene: {
       preload,
       create,
       update,
-    },
+    },*/
+    scene: [MenuScene, gameScene],
     physics: {
       default: 'arcade',
       arcade: {
@@ -25,27 +42,39 @@ const config = {
 const game = new Phaser.Game(config);
 
 function preload(){
-    this.load.image('ball','assets/ball.png')
-    this.load.image('paddle','assets/paddle.png')
-    this.load.image('brick1','assets/brick1.png')
-    this.load.image('brick2','assets/brick2.png')
-    this.load.image('brick3','assets/brick3.png')
-    this.load.image('brick11','assets/brick1.png')
-    this.load.image('brick22','assets/brick2.png')
-    this.load.image('brick33','assets/brick3.png')
+    this.load.image('ball','assets/ball.png');
+    this.load.image('paddle','assets/paddle.png');
+    this.load.image('brick1','assets/brick1.png');
+    this.load.image('brick2','assets/brick2.png');
+    this.load.image('brick3','assets/brick3.png');
+    this.load.image('brick11','assets/brick1.png');
+    this.load.image('brick22','assets/brick2.png');
+    this.load.image('brick33','assets/brick3.png');
+    this.load.audio('songgame', 'assets/audio/songgame.mp3');
 }
 
 let player1,player2, ball1,ball2, verdeBricks, roxoBricks, azulBricks, cursor1,cursor2;
 let gameStarted = false;
 let openingText, gameOverText, playerWonText;
-
+let scorePlayer1 = 0;
+let scoreTextPlayer1;
+let scorePlayer2 = 0;
+let scoreTextPlayer2;
 
 
 
 function create(){
+  
+  let startSound = this.sound.add('songgame');
+  startSound.play();
+
+  
 
 
+  scoreTextPlayer1 = this.add.text(16,1660, 'Player 1 Score: 0', { fontSize: '32px', fill: '#FFF' });
 
+    // Configurando o texto de pontuação do Jogador 2
+  scoreTextPlayer2 = this.add.text(16, 10, 'Player 2 Score: 0', { fontSize: '32px', fill: '#FFF' });
   
   openingText = this.add.text(
     this.physics.world.bounds.width / 2,
@@ -133,7 +162,9 @@ function create(){
       
     //_---------------------------------------//
 
-    
+    this.physics.add.collider(ball1, verdeBricks, destroyBrick, null, this);
+    this.physics.add.collider(ball1, roxoBricks, destroyBrick, null, this);
+    this.physics.add.collider(ball1, azulBricks, destroyBrick, null, this);
  
 
   cursor1 = this.input.keyboard.createCursorKeys();
@@ -149,12 +180,6 @@ function create(){
   this.physics.world.checkCollision.down = false;
 
 
-  //Partir bricks//
-  // Adiciona colisão entre a bola e os tijolos
-  this.physics.add.collider(ball1, verdeBricks, brickCollision, null, this);
-  this.physics.add.collider(ball1, roxoBricks, brickCollision, null, this);
-  this.physics.add.collider(ball1, azulBricks, brickCollision, null, this);
- 
 
   player1.setImmovable(true);
   this.physics.add.collider(ball1, player1, hitPlayer, null, this);
@@ -201,6 +226,10 @@ function update(){
   
 
 }
+function destroyBrick(ball1, brick) {
+  brick.disableBody(true, true); // This will hide the brick and disable it from physics world
+}
+
 
 //-----------------Se a bola cair termina--------------//
 function isGameOverPlayer1(world) {
@@ -217,9 +246,7 @@ function isWon() {
   return verdeBricks.countActive() + roxoBricks.countActive() + azulBricksBricks.countActive() == 0;
 }
 
-function brickCollision(ball, brick) {
-  brick.disableBody(true, true); // Desativa e esconde o tijolo
-}
+
 
 function hitPlayer(ball1, player1) {
   // Increase the velocity of the ball after it bounces
