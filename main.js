@@ -50,7 +50,7 @@ function preload(){
     this.load.image('brick11','assets/brick1.png');
     this.load.image('brick22','assets/brick2.png');
     this.load.image('brick33','assets/brick3.png');
-    this.load.audio('songgame', 'assets/audio/songgame.mp3');
+    this.load.audio('song1', 'assets/audio/song1.mp3');
 }
 
 let player1,player2, ball1,ball2, verdeBricks, roxoBricks, azulBricks, cursor1,cursor2;
@@ -65,7 +65,7 @@ let scoreTextPlayer2;
 
 function create(){
   
-  let startSound = this.sound.add('songgame');
+  let startSound = this.sound.add('song1');
   startSound.play();
 
   
@@ -189,7 +189,7 @@ function update(){
 
     if (!gameStarted && cursor1.space.isDown) {
       gameStarted = true;
-      ball1.setVelocityY(-300);
+      ball1.setVelocityY(-600);
       ball1.setX(player1.x);
       openingText.setVisible(false);  // Oculta o texto inicial
     }
