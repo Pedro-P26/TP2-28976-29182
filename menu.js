@@ -46,6 +46,38 @@ class MenuScene extends Phaser.Scene {
             yoyo: true,
             repeat: -1 // Repete infinitamente
         });
+
+        // Criando o botão de controladores
+        const controllersButton = this.add.text(this.physics.world.bounds.width / 2, this.physics.world.bounds.height / 2 + 100, 'Controllers', {
+            fontSize: '40px',
+            fill: '#FFF',
+            fontStyle: 'bold',
+            fontFamily: 'Arial'
+        }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+        // Efeito de hover para o botão de controladores
+        controllersButton.on('pointerover', () => {
+            controllersButton.setStyle({ fill: '#f39c12' });
+        });
+
+        controllersButton.on('pointerout', () => {
+            controllersButton.setStyle({ fill: '#FFF' });
+        });
+
+        // Evento de clique para mostrar os controladores
+        controllersButton.on('pointerdown', () => {
+            this.scene.start('ControllersScene');
+        });
+
+        // Animação de pulsar para o botão de controladores
+        this.tweens.add({
+            targets: controllersButton,
+            scale: { from: 1, to: 1.1 },
+            duration: 800,
+            yoyo: true,
+            repeat: -1
+        });
+    
     }
 }
 

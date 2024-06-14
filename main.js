@@ -1,59 +1,53 @@
-const gameScene = new Phaser.Class({
+const GameScene = new Phaser.Class({
   Extends: Phaser.Scene,
 
-  initialize:
-
-  function GameScene() {
+  initialize: function GameScene() {
     Phaser.Scene.call(this, { key: 'GameScene' });
   },
 
-  // Mova as funções `preload`, `create`, e `update` para cá
-  preload,
-  create,
-  update,
+  preload: preload,
+  create: create,
+  update: update,
 });
 
-
 const config = {
-    type: Phaser.AUTO,
-    parent: 'game',
-    width: 2500,
-    height: 1700,
-    scale: {
-      mode: Phaser.Scale.RESIZE,
-      autoCenter: Phaser.Scale.CENTER_BOTH
+  type: Phaser.AUTO,
+  parent: 'game',
+  width: 1280,
+  height: 720,
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+  },
+  scene: [MenuScene, GameScene],
+  physics: {
+    default: 'arcade',
+    arcade: {
+      debug: false,
+      gravity: { y: 0 },
     },
-    /*scene: {
-      preload,
-      create,
-      update,
-    },*/
-    scene: [MenuScene, gameScene],
-    physics: {
-      default: 'arcade',
-      arcade: {
-        debug:true,
-        gravity: false
-      },
-    }
-  };
-  
-  // Create the game instance
+  },
+};
+
 const game = new Phaser.Game(config);
 
-function preload(){
-    this.load.image('ball','assets/ball.png');
-    this.load.image('paddle','assets/paddle.png');
-    this.load.image('brick1','assets/brick1.png');
-    this.load.image('brick2','assets/brick2.png');
-    this.load.image('brick3','assets/brick3.png');
-    this.load.image('brick11','assets/brick1.png');
-    this.load.image('brick22','assets/brick2.png');
-    this.load.image('brick33','assets/brick3.png');
-    this.load.audio('song1', 'assets/audio/song1.mp3');
+function preload() {
+  this.load.image('ball', 'assets/ball.png');
+  this.load.image('paddle', 'assets/paddle.png');
+  this.load.image('blueBrick', 'assets/blueBrick.png');
+  this.load.image('greenBrick', 'assets/greenBrick.png');
+  this.load.image('purpleBrick', 'assets/purpleBrick.png');
+  this.load.image('redBrick', 'assets/redBrick.png');
+  this.load.image('orangeBrick', 'assets/orangeBrick.png');
+  this.load.image('cyanBrick', 'assets/cyanBrick.png');
+  this.load.image('yellowBrick', 'assets/yellowBrick.png');
+  this.load.image('darkgreenBrick', 'assets/darkgreenBrick.png');
+  this.load.image('greyBrick', 'assets/greyBrick.png');
+  this.load.image('brownBrick', 'assets/brownBrick.png');
+  this.load.audio('song1', 'assets/audio/song1.mp3');
 }
 
-let player1,player2, ball1,ball2, verdeBricks, roxoBricks, azulBricks, cursor1,cursor2;
+let player1, player2, ball1, ball2, cursor1, cursor2;
 let gameStarted = false;
 let openingText, gameOverText, playerWonText;
 let scorePlayer1 = 0;
@@ -61,202 +55,197 @@ let scoreTextPlayer1;
 let scorePlayer2 = 0;
 let scoreTextPlayer2;
 
-
-
-function create(){
-  
+function create() {
   let startSound = this.sound.add('song1');
   startSound.play();
 
-  
+  scoreTextPlayer1 = this.add.text(16, 690, 'Player 1 Score: 0', { fontSize: '24px', fill: '#FFF' });
+  scoreTextPlayer2 = this.add.text(16, 10, 'Player 2 Score: 0', { fontSize: '24px', fill: '#FFF' });
 
-
-  scoreTextPlayer1 = this.add.text(16,1660, 'Player 1 Score: 0', { fontSize: '32px', fill: '#FFF' });
-
-    // Configurando o texto de pontuação do Jogador 2
-  scoreTextPlayer2 = this.add.text(16, 10, 'Player 2 Score: 0', { fontSize: '32px', fill: '#FFF' });
-  
   openingText = this.add.text(
     this.physics.world.bounds.width / 2,
     this.physics.world.bounds.height / 2,
     'Press SPACE to Start',
     {
       fontFamily: 'Monaco, Courier, monospace',
-      fontSize: '90px',
-      fill: '#fff'
+      fontSize: '40px',
+      fill: '#fff',
     },
   );
-  
-  openingText.setOrigin(0.85);
-  
-  //-----------------------------//
-    player1 = this.physics.add.sprite(
-        1250, 
-        1600,
-        'paddle',
 
-    ).setScale(0.5);
-    //player1.setCollideWorldBounds(true);
+  openingText.setOrigin(0.5);
 
-    ball1 = this.physics.add.sprite(
-        1250, 
-        1500, 
-        'ball' 
-      ).setScale(0.5);
-   
-  //---------------------------//
+  // Player 1
+  player1 = this.physics.add.sprite(480, 680, 'paddle').setScale(0.2);
+  ball1 = this.physics.add.sprite(480, 640, 'ball').setScale(0.2);
 
-    player2 = this.physics.add.sprite(
-        1260,
-        85,
-        'paddle',
+  // Player 2
+  player2 = this.physics.add.sprite(800, 680, 'paddle').setScale(0.2);
+  ball2 = this.physics.add.sprite(800, 640, 'ball').setScale(0.2);
 
-    ).setScale(0.5);
+  const bricksConfig = [
+    'blueBrick', 'greenBrick', 'purpleBrick', 'redBrick', 'orangeBrick',
+    'cyanBrick', 'yellowBrick', 'darkgreenBrick', 'greyBrick', 'brownBrick'
+  ];
 
-    ball2 = this.physics.add.sprite(
-      1250, 
-      180, 
-      'ball' 
-    ).setScale(0.5);
+  const startX = 80;
+  const startY = 50;
+  const brickWidth = 100; // largura
+  const brickHeight = 16; //altura
+  const bricksPerRow = 11; // n de tijolos por fila
+  const rows = bricksConfig.length;
 
-  //-----------------------------//
-
-    verdeBricks = this.physics.add.group({
-        key: 'brick1',
-        repeat: 4,
-        immovable: true,
-        setXY: {
-          x: 500,
-          y: 1100,
-          stepX: 350
-        }
-      }).children.iterate(function (brick) {
-        brick.setScale(0.5); 
+  for (let row = 0; row < rows; row++) {
+    const brickGroup = this.physics.add.group({
+      key: bricksConfig[row],
+      repeat: bricksPerRow - 1,
+      setXY: { x: startX, y: startY + row * brickHeight * 2, stepX: brickWidth * 1.1 }
     });
 
-    roxoBricks = this.physics.add.group({
-        key: 'brick2',
-        repeat: 4,
-        immovable: true,
-        setXY: {
-          x: 500,
-          y: 1000,
-          stepX: 350
-        }
-      }).children.iterate(function (brick) {
-        brick.setScale(0.5); 
+    brickGroup.children.iterate(function (brick) {
+      brick.setScale(0.28); // Reduzir a escala dos blocos para ajustar o tamanho no campo
+      brick.refreshBody();
+      brick.body.immovable = true;
     });
 
-      azulBricks = this.physics.add.group({
-        key: 'brick3',
-        repeat: 4,
-        immovable: true,
-        setXY: {
-          x: 500,
-          y: 900,
-          stepX: 350
-        }
-      }).children.iterate(function (brick) {
-        brick.setScale(0.5); 
-    });
-      
-    //_---------------------------------------//
+    this.physics.add.collider(ball1, brickGroup, destroyBrick, null, this);
+    this.physics.add.collider(ball2, brickGroup, destroyBrick, null, this);
+  }
 
-    this.physics.add.collider(ball1, verdeBricks, destroyBrick, null, this);
-    this.physics.add.collider(ball1, roxoBricks, destroyBrick, null, this);
-    this.physics.add.collider(ball1, azulBricks, destroyBrick, null, this);
- 
+  //meter bordas brancas pra saber os limites do jogo
+  const graphics = this.add.graphics();
+  graphics.lineStyle(10, 0xffffff, 1);
+  graphics.lineBetween(10, 10, 10, 710); // Borda esquerda
+  graphics.lineBetween(1270, 10, 1270, 710); // Borda direita
+  graphics.lineBetween(10, 10, 1270, 10); // Borda superior
 
   cursor1 = this.input.keyboard.createCursorKeys();
   cursor2 = this.input.keyboard.addKeys({
     left: Phaser.Input.Keyboard.KeyCodes.A,
-    right: Phaser.Input.Keyboard.KeyCodes.D
+    right: Phaser.Input.Keyboard.KeyCodes.D,
   });
 
-  //Testar com player1 falta player2//
   player1.setCollideWorldBounds(true);
   ball1.setCollideWorldBounds(true);
   ball1.setBounce(1, 1);
-  this.physics.world.checkCollision.down = false;
-
-
+  ball1.body.onWorldBounds = true; //colisao com limites (bordas brancas)
+  ball1.body.world.on('worldbounds', function(body) {
+    if (body.gameObject === ball1) {
+      maintainVelocity(ball1);
+    }
+  });
 
   player1.setImmovable(true);
   this.physics.add.collider(ball1, player1, hitPlayer, null, this);
 
-}
-function update(){
-
-    if (!gameStarted && cursor1.space.isDown) {
-      gameStarted = true;
-      ball1.setVelocityY(-600);
-      ball1.setX(player1.x);
-      openingText.setVisible(false);  // Oculta o texto inicial
+  player2.setCollideWorldBounds(true);
+  ball2.setCollideWorldBounds(true);
+  ball2.setBounce(1, 1);
+  ball2.body.onWorldBounds = true; // mesma coisa das colosoes mas pra outra bola
+  ball2.body.world.on('worldbounds', function(body) {
+    if (body.gameObject === ball2) {
+      maintainVelocity(ball2);
     }
+  });
 
-    
-    if (cursor1.left.isDown) {
-      player1.setVelocityX(-500); // move para a esquerda
-    } else if (cursor1.right.isDown) {
-      player1.setVelocityX(500); // move para a direita
-    } else {
-      player1.setVelocityX(0); // para quando nenhuma tecla de movimento é pressionada~
+  player2.setImmovable(true);
+  this.physics.add.collider(ball2, player2, hitPlayer, null, this);
 
-      if (!gameStarted) {
-        ball1.setX(player1.x);
-      
-        if (cursor1.space.isDown) {
-          gameStarted = true;
-          ball1.setVelocityY(-200);
-        }
-      }
-
-    }
-
-    
-
-
-    if (cursor2.left.isDown) {
-      player2.setVelocityX(-500); // Move para a esquerda
-    } else if (cursor2.right.isDown) {
-      player2.setVelocityX(500); // Move para a direita
-    } else {
-      player2.setVelocityX(0); // Para quando nenhuma tecla é pressionada
-    }
-  
-
-}
-function destroyBrick(ball1, brick) {
-  brick.disableBody(true, true); // This will hide the brick and disable it from physics world
+  //codigo pra bola cair no void em biaxo
+  this.physics.world.setBoundsCollision(true, true, true, false);
 }
 
-
-//-----------------Se a bola cair termina--------------//
-function isGameOverPlayer1(world) {
-  return ball1.body.y > world.bounds.height;
-}
-
-function isGameOverPlayer2(world) {
-  return ball2.body.y > world.bounds.height;
-}
-
-//----------------------------------//
-
-function isWon() {
-  return verdeBricks.countActive() + roxoBricks.countActive() + azulBricksBricks.countActive() == 0;
-}
-
-
-
-function hitPlayer(ball1, player1) {
-  // Increase the velocity of the ball after it bounces
-  ball1.setVelocityY(ball1.body.velocity.y - 5);
-
-  let newXVelocity = Math.abs(ball1.body.velocity.x) + 10;
-  // If the ball is to the left of the player, ensure the X Velocity is negative
-  if (ball1.x < player1.x) {
-    ball1.setVelocityX(-newXVelocity);
-  } else {
-    ball1.setVelocityX(newXVelocity);
+function update() {
+  if (!gameStarted && cursor1.space.isDown) {
+    gameStarted = true;
+    ball1.setVelocity(-200, -200);
+    ball1.setX(player1.x);
+    ball2.setVelocity(200, 200);
+    ball2.setX(player2.x);
+    openingText.setVisible(false);
   }
+
+  if (cursor1.left.isDown) {
+    player1.setVelocityX(-500);
+  } else if (cursor1.right.isDown) {
+    player1.setVelocityX(500);
+  } else {
+    player1.setVelocityX(0);
+    if (!gameStarted) {
+      ball1.setX(player1.x);
+      if (cursor1.space.isDown) {
+        gameStarted = true;
+        ball1.setVelocity(-200, -200);
+      }
+    }
+  }
+
+  if (cursor2.left.isDown) {
+    player2.setVelocityX(-500);
+  } else if (cursor2.right.isDown) {
+    player2.setVelocityX(500);
+  } else {
+    player2.setVelocityX(0);
+    if (!gameStarted) {
+      ball2.setX(player2.x);
+      if (cursor1.space.isDown) {
+        gameStarted = true;
+        ball2.setVelocity(200, 200);
+      }
+    }
+  }
+
+  // Verificar se a bola 1 caiu fora do campo de player 1
+  if (ball1.y > 720) {
+    resetBall(ball1, player1);
+  }
+
+  // Verificar se a bola 2 caiu fora do campo de player 2
+  if (ball2.y > 720) {
+    resetBall(ball2, player2);
+  }
+}
+
+function maintainVelocity(ball) {
+  const speed = 300; // velocidades
+  const angle = Math.atan2(ball.body.velocity.y, ball.body.velocity.x);
+  ball.setVelocity(speed * Math.cos(angle), speed * Math.sin(angle));
+}
+
+function destroyBrick(ball, brick) {
+  brick.disableBody(true, true);
+
+  // aumenta score apos partir bloco
+  if (ball === ball1) {
+    scorePlayer1 += 10;
+    scoreTextPlayer1.setText('Player 1 Score: ' + scorePlayer1);
+  } else if (ball === ball2) {
+    scorePlayer2 += 10;
+    scoreTextPlayer2.setText('Player 2 Score: ' + scorePlayer2);
+  }
+
+  // ao uma bola acertar um bloco, esta aumenta a velcoidade
+  let currentVelocity = ball.body.velocity;
+  ball.setVelocity(currentVelocity.x * 1.1, currentVelocity.y * 1.1);
+}
+
+//FUNCOES PARA FAZER AS MECANICAS DA BOLA (CHATGPT)
+function hitPlayer(ball, player) {
+  // Calcular a posição relativa da bola em relação ao paddle
+  let relativeIntersectX = (ball.x - player.x) / player.displayWidth;
+
+  // Definir a velocidade da bola com base na posição de colisão
+  const maxBounceAngle = Math.PI / 3; // Ângulo máximo de 60 graus
+  let bounceAngle = relativeIntersectX * maxBounceAngle;
+
+  // Aplicar nova velocidade à bola
+  const speed = 300;
+  ball.setVelocity(speed * Math.sin(bounceAngle), -speed * Math.cos(bounceAngle));
+}
+
+function resetBall(ball, player) {
+  ball.setVelocity(0);
+  ball.setPosition(player.x, player.y - 40); // Colocar a bola acima do jogador
+  gameStarted = false;
+  openingText.setVisible(true);
 }
