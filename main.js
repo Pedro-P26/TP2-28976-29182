@@ -45,6 +45,7 @@ function preload() {
   this.load.image('greyBrick', 'assets/greyBrick.png');
   this.load.image('brownBrick', 'assets/brownBrick.png');
   this.load.audio('song1', 'assets/audio/song1.mp3');
+  this.load.audio('breaksong','assets/audio/breaksong.mp3');
 }
 
 let player1, player2, ball1, ball2, cursor1, cursor2;
@@ -108,9 +109,15 @@ function create() {
       brick.body.immovable = true;
     });
 
-    this.physics.add.collider(ball1, brickGroup, destroyBrick, null, this);
-    this.physics.add.collider(ball2, brickGroup, destroyBrick, null, this);
+    //this.physics.add.collider(ball1, brickGroup, destroyBrick, null, this);
+    //this.physics.add.collider(ball2, brickGroup, destroyBrick, null, this);
+    this.physics.add.collider(ball1, brickGroup, (ball, brick) => destroyBrick(ball, brick), null, this);
+    this.physics.add.collider(ball2, brickGroup, (ball, brick) => destroyBrick(ball, brick), null, this);
+
   }
+
+  // Adicionar uma propriedade para contar os tijolos
+  this.totalBricks = bricksConfig.length * bricksPerRow;
 
   //meter bordas brancas pra saber os limites do jogo
   const graphics = this.add.graphics();
@@ -204,6 +211,34 @@ function update() {
   if (ball2.y > 720) {
     resetBall(ball2, player2);
   }
+
+  // Checar se o jogo começou e todos os tijolos foram destruídos
+  if (gameStarted && this.totalBricks <= 0) {
+    // Determine o vencedor com base na pontuação
+    if (scorePlayer1 > scorePlayer2) {
+      playerWonText = this.add.text(this.physics.world.bounds.width / 2, this.physics.world.bounds.height / 2, 'Player 1 Wins!', {
+        fontFamily: 'Monaco, Courier, monospace',
+        fontSize: '40px',
+        fill: '#fff'
+      }).setOrigin(0.5);
+    } else if (scorePlayer2 > scorePlayer1) {
+      playerWonText = this.add.text(this.physics.world.bounds.width / 2, this.physics.world.bounds.height / 2, 'Player 2 Wins!', {
+        fontFamily: 'Monaco, Courier, monospace',
+        fontSize: '40px',
+        fill: '#fff'
+      }).setOrigin(0.5);
+    } else {
+      playerWonText = this.add.text(this.physics.world.bounds.width / 2, this.physics.world.bounds.height / 2, 'It\'s a Tie!', {
+        fontFamily: 'Monaco, Courier, monospace',
+        fontSize: '40px',
+        fill: '#fff'
+      }).setOrigin(0.5);
+    }
+    gameStarted = false; // Parar o jogo
+  }
+
+
+
 }
 
 function maintainVelocity(ball) {
@@ -214,6 +249,11 @@ function maintainVelocity(ball) {
 
 function destroyBrick(ball, brick) {
   brick.disableBody(true, true);
+
+  this.totalBricks -= 1; // Decrementa o contador de tijolos
+
+  //som ao partir brick
+  //this.sound.play('breaksong');
 
   // aumenta score apos partir bloco
   if (ball === ball1) {
