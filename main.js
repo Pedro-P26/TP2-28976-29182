@@ -46,6 +46,7 @@ function preload() {
   this.load.image('brownBrick', 'assets/brownBrick.png');
   this.load.audio('song1', 'assets/audio/song1.mp3');
   this.load.audio('breaksong','assets/audio/breaksong.mp3');
+  this.load.image('speedBoost', 'assets/speedboost.png');
 }
 
 let player1, player2, ball1, ball2, cursor1, cursor2;
@@ -55,17 +56,23 @@ let scorePlayer1 = 0;
 let scoreTextPlayer1;
 let scorePlayer2 = 0;
 let scoreTextPlayer2;
+let timeElapsed = 0;
+let timeText;
+
 
 function create() {
   let startSound = this.sound.add('song1');
   startSound.play();
 
+  
   scoreTextPlayer1 = this.add.text(16, 690, 'Player 1 Score: 0', { fontSize: '24px', fill: '#FFF' });
   scoreTextPlayer2 = this.add.text(16, 10, 'Player 2 Score: 0', { fontSize: '24px', fill: '#FFF' });
 
+  timeText = this.add.text(1100, 690, 'Time: 0s', { fontSize: '24px', fill: '#FFF' });
+
   openingText = this.add.text(
     this.physics.world.bounds.width / 2,
-    this.physics.world.bounds.height / 2,
+    this.physics.world.bounds.height / 2 + 23,
     'Press SPACE to Start',
     {
       fontFamily: 'Monaco, Courier, monospace',
@@ -95,6 +102,8 @@ function create() {
   const brickHeight = 16; //altura
   const bricksPerRow = 11; // n de tijolos por fila
   const rows = bricksConfig.length;
+
+  
 
   for (let row = 0; row < rows; row++) {
     const brickGroup = this.physics.add.group({
@@ -160,6 +169,9 @@ function create() {
 
   //codigo pra bola cair no void em biaxo
   this.physics.world.setBoundsCollision(true, true, true, false);
+
+  
+
 }
 
 function update() {
@@ -201,15 +213,14 @@ function update() {
       }
     }
   }
+  if (gameStarted) {
+    timeElapsed += 1/60; // Phaser roda tipicamente a 60 FPS
+    timeText.setText('Time: ' + timeElapsed.toFixed(2) + 's');
+}
 
-  // Verificar se a bola 1 caiu fora do campo de player 1
-  if (ball1.y > 720) {
-    resetBall(ball1, player1);
-  }
-
-  // Verificar se a bola 2 caiu fora do campo de player 2
-  if (ball2.y > 720) {
-    resetBall(ball2, player2);
+  // Atualizar as chamadas de reset para a nova função
+  if (ball1.y > 720 || ball2.y > 720) {
+    resetBalls(); // Redefinir ambas as bolas se qualquer uma delas cair fora
   }
 
   // Checar se o jogo começou e todos os tijolos foram destruídos
@@ -248,8 +259,9 @@ function maintainVelocity(ball) {
 }
 
 function destroyBrick(ball, brick) {
+  
   brick.disableBody(true, true);
-
+  
   this.totalBricks -= 1; // Decrementa o contador de tijolos
 
   //som ao partir brick
@@ -264,9 +276,12 @@ function destroyBrick(ball, brick) {
     scoreTextPlayer2.setText('Player 2 Score: ' + scorePlayer2);
   }
 
+
+
   // ao uma bola acertar um bloco, esta aumenta a velcoidade
   let currentVelocity = ball.body.velocity;
   ball.setVelocity(currentVelocity.x * 1.1, currentVelocity.y * 1.1);
+
 }
 
 //FUNCOES PARA FAZER AS MECANICAS DA BOLA (CHATGPT)
@@ -283,9 +298,19 @@ function hitPlayer(ball, player) {
   ball.setVelocity(speed * Math.sin(bounceAngle), -speed * Math.cos(bounceAngle));
 }
 
-function resetBall(ball, player) {
-  ball.setVelocity(0);
-  ball.setPosition(player.x, player.y - 40); // Colocar a bola acima do jogador
+
+
+function resetBalls() {
+  resetSingleBall(ball1, player1);
+  resetSingleBall(ball2, player2);
   gameStarted = false;
   openingText.setVisible(true);
+
+  timeElapsed = 0; // Reinicia o tempo
+  timeText.setText('Time: 0s'); // Atualiza o texto do tempo imediatamente
+}
+
+function resetSingleBall(ball, player) {
+  ball.setVelocity(0);
+  ball.setPosition(player.x, player.y - 40); // Reposiciona a bola acima do paddle
 }
